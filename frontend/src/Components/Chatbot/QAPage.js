@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import './QAPage.css'; 
 import '@fortawesome/fontawesome-free/css/all.css';
 
-
 const QAPage = () => {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -20,39 +19,61 @@ const QAPage = () => {
     ]);
   };
 
+  const triggerHelpline = () => {
+    alert("Severe distress detected! Contacting helpline...");
+  };
+
+  const suggestHelp = async (severity, userMessage) => {
+    if (severity === "Severe Distress") {
+      triggerHelpline();
+    } else {
+      try {
+        const response = await fetch('https://floral-mode-046e.dharshinilohi.workers.dev/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt : userMessage }),
+          mode: 'cors'
+        });
+
+        const data = await response.json();
+        const botReply = data.response.response || 'Sorry, I couldn\'t understand your message.';
+        addMessage(botReply);
+      } catch (error) {
+        addMessage('Sorry, there was an error processing your message.');
+        console.error('Error:', error);
+      }
+    }
+  };
+
   const simulateBotResponse = async (userMessage) => {
     setTyping(true);
     
-    // Send the user message to the API
     try {
-      const response = await fetch('https://floral-mode-046e.dharshinilohi.workers.dev/', {
+      const classificationResponse = await fetch('https://lifelink-1.onrender.com//classify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: userMessage }), 
+        body: JSON.stringify({ text: userMessage }),
         mode: 'cors'
       });
-  
-      // Wait for the response and extract the data
-      const data = await response.json();
-      console.log(data);
-      // Assuming the response from the server contains a 'reply' property
-      const botReply = data.response.response || 'Sorry, I couldn\'t understand your message.';
       
-      // Set the typing state to false and display the bot's reply
+      const classificationData = await classificationResponse.json();
+      const severity = classificationData.severity;
+      
       setTyping(false);
-      addMessage(botReply);
+      addMessage(`Detected severity: ${severity}`);
+      suggestHelp(severity, userMessage);
       
     } catch (error) {
-      // Handle error case
       setTyping(false);
       addMessage('Sorry, there was an error processing your message.');
       console.error('Error:', error);
     }
   };
   
-
   const handleSendMessage = () => {
     if (inputMessage.trim()) {
       addMessage(inputMessage, true);
