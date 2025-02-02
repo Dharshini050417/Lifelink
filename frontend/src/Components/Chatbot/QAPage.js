@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './QAPage.css'; 
 import '@fortawesome/fontawesome-free/css/all.css';
+import GenerateReportButton from './GenerateButton';
+import GoogleTranslate from '../GoogleTranslate.js/GoogleTranslate';
 
 const QAPage = () => {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
@@ -29,7 +31,15 @@ const QAPage = () => {
     if (severity === "Severe Distress") {
       triggerHelpline();
     }
-
+    let emotionalPrompt = `
+    You are a compassionate therapist and wellness coach. The user is feeling stressed or overwhelmed. 
+    Offer emotional support first. Then, provide practical stress relief exercises, and recommend 
+    safe, over-the-counter supplements. Do not give prescription medication advice.
+    
+    Format your response in clear sentences.
+    
+    Here is the user's input: "${userMessage}"
+    `;
     try {
       setTyping(true);
       setIsInputDisabled(true);
@@ -39,7 +49,7 @@ const QAPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: userMessage }),
+        body: JSON.stringify({ prompt: emotionalPrompt }),
         mode: 'cors'
       });
 
@@ -139,16 +149,19 @@ const QAPage = () => {
     <div className={`app-container ${isDarkTheme ? 'dark' : 'light'}`}>
       <div className="header">
         <div className="header-title">
-          <h1>AI Assistant</h1>
+          <h1>Lifelink AI Assistant</h1>
           <div className="bot-status">
             <div className="status-indicator"></div>
             <span>Online</span>
           </div>
         </div>
         <div className="controls">
-          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
-            <i className={`fas ${isDarkTheme ? 'fa-sun' : 'fa-moon'}`}></i>
-          </button>
+        <button className="send-button" onClick={handleSendMessage} disabled={isInputDisabled}>
+              <GoogleTranslate/>
+            </button>
+        
+              <GenerateReportButton/>
+            
         </div>
       </div>
 
