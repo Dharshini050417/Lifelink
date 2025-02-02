@@ -1,5 +1,8 @@
+from flask import Flask, request, jsonify
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
 import torch
+
+app = Flask(__name__)
 
 # Load DistilBERT model and tokenizer
 MODEL_NAME = "distilbert-base-uncased"
@@ -9,7 +12,6 @@ model = DistilBertForSequenceClassification.from_pretrained(MODEL_NAME, num_labe
 # Labels for classification
 LABELS = {0: "Mild Distress", 1: "Moderate Distress", 2: "Severe Distress"}
 
-# Function to classify text
 def classify_text(text):
     # Tokenize input
     inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
@@ -22,11 +24,15 @@ def classify_text(text):
     
     return LABELS[predicted_label]
 
-# Example usage
-if __name__ == "__main__":
-    # Sample text
-    user_input = "I feel sad and lonely. I don't know what to do."
+@app.route("/classify", methods=["POST"])
+def classify():
+    data = request.get_json()
+    text = data.get("text", "")
+    if not text:
+        return jsonify({"error": "Text is required"}), 400
     
-    # Classification
-    category = classify_text(user_input)
-    print(f"Classification: {category}")
+    category = classify_text(text)
+    return jsonify({"classification": category})
+
+if __name__ == "__main__":
+    app.run(debug=True)
