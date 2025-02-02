@@ -4,7 +4,7 @@ import torch
 from flask_cors import CORS  # Import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)  #
 
 # Load DistilBERT model and tokenizer
 MODEL_NAME = "distilbert-base-uncased"
