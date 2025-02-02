@@ -68,18 +68,19 @@ The API will run on `http://127.0.0.1:5000/`.
 
 ---
 
-## 🌐 Cloudflare Deployment
-The chatbot model has already been deployed on Cloudflare Workers and is accessible via:
-```
-https://floral-mode-046e.dharshinilohi.workers.dev/
-```
+## 🌐 Deployed Models
+The chatbot model has been deployed at the following endpoints:
+1. Cloudflare Workers:
+   ```
+   https://floral-mode-046e.dharshinilohi.workers.dev/
+   ```
+2. Render:
+   ```
+   https://lifelink-1.onrender.com/classify
+   ```
 
-Make sure the frontend fetch requests are correctly pointed to this endpoint.
+Make sure the frontend fetch requests are correctly pointed to these endpoints.
 
 ---
-
-
-### 💡 Contributions & Issues
-Feel free to contribute by creating a pull request or reporting issues in the GitHub repository.
 
 
