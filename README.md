@@ -69,7 +69,7 @@ The API will run on `http://127.0.0.1:5000/`.
 ---
 
 ## 🌐 Deployed Models
-The chatbot model has been deployed at the following endpoints:
+The chatbot model has been deployed at the following endpoints :
 1. Cloudflare Workers:
    ```
    https://floral-mode-046e.dharshinilohi.workers.dev/
