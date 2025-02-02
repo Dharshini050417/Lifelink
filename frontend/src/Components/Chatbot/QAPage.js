@@ -7,6 +7,8 @@ const QAPage = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [typing, setTyping] = useState(false);
+  const [isInputDisabled, setIsInputDisabled] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   const toggleTheme = () => {
     setIsDarkTheme(prev => !prev);
@@ -26,32 +28,48 @@ const QAPage = () => {
   const suggestHelp = async (severity, userMessage) => {
     if (severity === "Severe Distress") {
       triggerHelpline();
-    } else {
-      try {
-        const response = await fetch('https://floral-mode-046e.dharshinilohi.workers.dev/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ prompt : userMessage }),
-          mode: 'cors'
-        });
+    }
 
-        const data = await response.json();
-        const botReply = data.response.response || 'Sorry, I couldn\'t understand your message.';
-        addMessage(botReply);
-      } catch (error) {
-        addMessage('Sorry, there was an error processing your message.');
-        console.error('Error:', error);
-      }
+    try {
+      setTyping(true);
+      setIsInputDisabled(true);
+
+      const response = await fetch('https://floral-mode-046e.dharshinilohi.workers.dev/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: userMessage }),
+        mode: 'cors'
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      const rawReply = data.response || "Sorry, I couldn't understand your message.";
+      
+      const formattedReply = rawReply.split('.')
+        .map(sentence => sentence.trim())
+        .filter(sentence => sentence.length > 0)
+        .join(".\n") + "."; // Ensure the last sentence ends with a period
+      console.log(formattedReply);
+      
+      addMessage(formattedReply);
+    } catch (error) {
+      addMessage('Sorry, there was an error processing your message.');
+      console.error('Error:', error);
+    } finally {
+      setTyping(false);
+      setIsInputDisabled(false);
     }
   };
 
   const simulateBotResponse = async (userMessage) => {
     setTyping(true);
-    
+    setIsInputDisabled(true);
+
     try {
-      const classificationResponse = await fetch('https://lifelink-1.onrender.com//classify', {
+      const classificationResponse = await fetch('https://lifelink-1.onrender.com/classify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,21 +77,20 @@ const QAPage = () => {
         body: JSON.stringify({ text: userMessage }),
         mode: 'cors'
       });
-      
+
       const classificationData = await classificationResponse.json();
-      const severity = classificationData.severity;
-      
+      const severity = classificationData.classification;
+      console.log(classificationData);
+
       setTyping(false);
-      addMessage(`Detected severity: ${severity}`);
       suggestHelp(severity, userMessage);
-      
     } catch (error) {
       setTyping(false);
-      addMessage('Sorry, there was an error processing your message.');
+      setIsInputDisabled(false);
       console.error('Error:', error);
     }
   };
-  
+
   const handleSendMessage = () => {
     if (inputMessage.trim()) {
       addMessage(inputMessage, true);
@@ -84,6 +101,38 @@ const QAPage = () => {
 
   const handleInputChange = (e) => {
     setInputMessage(e.target.value);
+  };
+
+  // Voice recognition function
+  const startListening = () => {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Your browser does not support voice recognition.");
+      return;
+    }
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInputMessage(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
   };
 
   return (
@@ -107,7 +156,21 @@ const QAPage = () => {
         {messages.map(message => (
           <div className={`message ${message.isUser ? 'user-message' : 'bot-message'}`} key={message.id}>
             <div className="avatar">{message.isUser ? 'U' : 'AI'}</div>
-            <div className="message-bubble">{message.content}</div>
+            <div className="message-bubble">
+              {message.isUser ? (
+                message.content
+              ) : (
+                <div style={{ textAlign: 'left' }}>
+                  {message.content.split('.').map((sentence, index) => 
+                    sentence.trim() && (
+                      <p key={index} style={{ margin: '5px 0' }}>
+                        <strong>{index + 1}.</strong> {sentence.trim()}.
+                      </p>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         ))}
         {typing && (
@@ -126,19 +189,24 @@ const QAPage = () => {
           <input
             type="text"
             className="message-input"
-            placeholder="Type your message..."
+            placeholder="Type or speak your message..."
             value={inputMessage}
             onChange={handleInputChange}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            disabled={isInputDisabled} 
           />
           <div className="action-buttons">
             <button className="action-button" aria-label="Add attachment">
               <i className="fas fa-paperclip"></i>
             </button>
-            <button className="action-button" aria-label="Voice input">
+            <button
+              className={`action-button ${isListening ? "listening" : ""}`}
+              aria-label="Voice input"
+              onClick={startListening}
+            >
               <i className="fas fa-microphone"></i>
             </button>
-            <button className="send-button" onClick={handleSendMessage}>
+            <button className="send-button" onClick={handleSendMessage} disabled={isInputDisabled}>
               <span>Send</span>
               <i className="fas fa-paper-plane"></i>
             </button>
