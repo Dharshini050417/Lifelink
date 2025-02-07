@@ -116,7 +116,7 @@ const QAPage = () => {
   // Voice recognition function
   const startListening = () => {
     if (!("webkitSpeechRecognition" in window)) {
-      alert("Your browser does not support voice recognition.");
+      alert("Your browser does not support voice recognition.");   //send alert message to windows
       return;
     }
 
