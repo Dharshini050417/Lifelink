@@ -15,7 +15,7 @@ const port = 5000;
 
 //connect mongodb
 const dbURI = process.env.DATABASE_URL
-// const dbURI = "mongodb+srv://reno:benedict4705@cluster0.i4j9ndf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
 if (!dbURI) {
     console.log("DATABASE_URL is not defined in the environment variables.");
 }
