@@ -3,6 +3,9 @@ import './QAPage.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import GenerateReportButton from './GenerateButton';
 import GoogleTranslate from '../GoogleTranslate.js/GoogleTranslate';
+import {jwtDecode}  from "jwt-decode";
+
+
 
 const QAPage = () => {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
@@ -12,6 +15,13 @@ const QAPage = () => {
   const [isInputDisabled, setIsInputDisabled] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
+
+  const token = localStorage.getItem('authToken');
+
+if (token) {
+    const decoded = jwtDecode(token);
+    console.log("User ID:", decoded.userId);
+}
   const toggleTheme = () => {
     setIsDarkTheme(prev => !prev);
   };

@@ -1,97 +1,112 @@
-import React from "react";
-import { useNavigate,Link } from "react-router-dom";
-import { useState } from "react";
-import './signup.css'
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import "./signup.css";
 import background from "../Assets/background.png";
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-            email: "",
-            password: "",
+        email: "",
+        password: "",
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value,
         });
+    };
 
-        const handleChange = (e) => {
-            const { name, value } = e.target;
-            setFormData({
-                ...formData,
-                [name]: value,
-            });
-        };
-
-        const handlesubmit = async (e) => {
-            e.preventDefault();
-    
-            await fetch("http://localhost:5000/login", {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch("https://lifelink-3.onrender.com/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(formData),
-                credentials: 'include'
-            })
-                .then((res) => {
-                    return res.json();
-                })
-                .then((response) => {
-                    console.log("login res ", response);
-                    if (response.ok) {
-                        toast(response.message);
-                        navigate("/home");
-                        window.location.reload();
-                        // await setCookie('authToken', response.data.authToken)
-                        // await setCookie('refreshToken', response.data.refreshToken)
-                        // const authToken = await getCookie('authToken');
-                        // console.log('My Cookie Value:', authToken);
-                        // checkLogin();
-                    } else {
-                        toast(response.message);
-                    }
-                })
-                .catch((error) => {
-                    toast("Error logging in", {
-                        type: "error",
-                        position: "top-right",
-                        autoClose: 2000,
-                    });
-                });
-        };
+                credentials: "include",
+            });
 
+            const result = await response.json();
+
+            if (response.ok) {
+                toast.success(result.message, { autoClose: 2000 });
+
+                // Store token (optional)
+                localStorage.setItem("authToken", result.authToken);
+                localStorage.setItem("refreshToken", result.refreshToken);
+                console.log("Auth Token:", result.authToken);
+                console.log("Refresh Token:", result.refreshToken);
+
+                setTimeout(() => {
+                    navigate("/home");
+                    window.location.reload();
+                }, 2000);
+            } else {
+                toast.error(result.message, { autoClose: 2000 });
+            }
+        } catch (error) {
+            toast.error("Error logging in", {
+                autoClose: 2000,
+                position: "top-right",
+            });
+        }
+    };
 
     return (
         <>
-        <ToastContainer/>
+            <ToastContainer />
             <div className="login-body">
-                <div className="sign-container" style={{backgroundImage: `url(${background})`,
-                                                        backgroundRepeat: "no-repeat",
-                                                        backgroundSize: "cover",
-                                                        backgroundPosition: "center",
-                                                        width: "100%",
-                                                        height: "100vh", }}>
-                    <div className="sign-col">
-                        {/* <img src={signimg} alt="man" className="sign-img"/> */}
-                    </div>
-                    <div class="login-box sign-col">
+                <div
+                    className="sign-container"
+                    style={{
+                        backgroundImage: `url(${background})`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        width: "100%",
+                        height: "100vh",
+                    }}
+                >
+                    <div className="sign-col"></div>
+                    <div className="login-box sign-col">
                         <h2 className="page-head">Log-in</h2>
-                        
-                            <div className="input-field">
-                                <input type="text" name="email" placeholder="Email" value={formData.email} onChange={handleChange} className="sign-input"/>
-                            </div>
-
-                            <div className="input-field">
-                                <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} className="sign-input"  />
-                            </div>
-
-                            <button onClick={handlesubmit} className="sign-submit">Log in</button>
-
-                            <p className="check-line">New to our Chatbot? <Link to='/'>Sign Up</Link></p>
+                        <div className="input-field">
+                            <input
+                                type="text"
+                                name="email"
+                                placeholder="Email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="sign-input"
+                            />
+                        </div>
+                        <div className="input-field">
+                            <input
+                                type="password"
+                                name="password"
+                                placeholder="Password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                className="sign-input"
+                            />
+                        </div>
+                        <button onClick={handleSubmit} className="sign-submit">
+                            Log in
+                        </button>
+                        <p className="check-line">
+                            New to our Chatbot? <Link to="/">Sign Up</Link>
+                        </p>
                     </div>
                 </div>
             </div>
         </>
-    )
-}
+    );
+};
 
-export default Login
+export default Login;
