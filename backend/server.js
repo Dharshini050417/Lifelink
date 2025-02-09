@@ -40,7 +40,7 @@ app.use(express.urlencoded({ extended: true })); // To parse URL-encoded request
 
 // ------------CORS-------------------
 app.use(cors({
-    origin: "http://localhost:3000", 
+    origin: "https://lifelink-nine.vercel.app", 
     credentials: true
 }));
 
